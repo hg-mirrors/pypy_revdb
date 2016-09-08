@@ -10,6 +10,10 @@ except ImportError:
 from _revdb.process import ReplayProcessGroup
 from _revdb.process import Breakpoint
 
+PROG_RES = 500000
+
+ERASE_LINE = '\x1b[K'
+
 r_cmdline = re.compile(r"([a-zA-Z0-9_]\S*|.)\s*(.*)")
 r_dollar_num = re.compile(r"\$(\d+)\b")
 
@@ -31,7 +35,8 @@ class RevDebugControl(object):
             raise ValueError("executable %r not found" % (executable,))
         linecacheoutput = self.getlinecacheoutput(pygments_background)
         self.pgroup = ReplayProcessGroup(executable, revdb_log_filename,
-                                         linecacheoutput)
+                                         linecacheoutput,
+                                         (PROG_RES, self.progress_callback))
         self.print_extra_pending_info = None
 
     def interact(self):
@@ -47,7 +52,7 @@ class RevDebugControl(object):
                     prompt = self.print_lines_before_prompt()
             except KeyboardInterrupt:
                 rtime = self.previous_time or 1
-                print
+                print ERASE_LINE
                 print 'KeyboardInterrupt: restoring state at time %d...' % (
                     rtime,)
                 self.pgroup.recreate_subprocess(rtime)
@@ -59,7 +64,7 @@ class RevDebugControl(object):
     def print_lines_before_prompt(self):
         last_time = self.pgroup.get_current_time()
         if last_time != self.previous_time:
-            print
+            print ERASE_LINE
             if self.pgroup.get_current_thread() != self.previous_thread:
                 self.previous_thread = self.pgroup.get_current_thread()
                 if self.previous_thread == 0:
@@ -70,16 +75,17 @@ class RevDebugControl(object):
                            '#%d --------------------' % (self.previous_thread,))
             self.pgroup.update_watch_values()
             last_time = self.pgroup.get_current_time()
-        if self.print_extra_pending_info:
-            print self.print_extra_pending_info
-            self.print_extra_pending_info = None
         if last_time != self.previous_time:
             self.pgroup.show_backtrace(complete=0)
             self.previous_time = last_time
+        if self.print_extra_pending_info:
+            print self.print_extra_pending_info
+            self.print_extra_pending_info = None
         prompt = '(%d)$ ' % last_time
         return prompt
 
     def display_prompt(self, prompt):
+        self.pgroup.wait_for_prompt = True
         try:
             cmdline = raw_input(prompt).strip()
         except EOFError:
@@ -490,3 +496,12 @@ class RevDebugControl(object):
             line = linecache.getline(filename, lineno)
             return highlight(line, lexer, fmt)
         return linecacheoutput
+
+    def progress_callback(self, tick, previous):
+        if previous:
+            sys.stdout.write('\x08' * previous)
+        if tick is not None:
+            msg = '(%d...)' % tick
+            sys.stdout.write(msg + ERASE_LINE)
+            sys.stdout.flush()
+            return len(msg)

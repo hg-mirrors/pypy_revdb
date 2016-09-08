@@ -83,7 +83,8 @@ class ReplayProcess(object):
     def __init__(self, pid, control_socket,
                  breakpoints_cache=AllBreakpoints(),
                  printed_objects=frozenset(),
-                 linecacheoutput=None):
+                 linecacheoutput=None,
+                 progress_callback=None):
         self.pid = pid
         self.control_socket = control_socket
         self.tainted = False
@@ -94,6 +95,8 @@ class ReplayProcess(object):
         #     (if uid < currently_created_objects), or that will
         #     automatically be discovered when we move forward
         self.linecacheoutput = linecacheoutput or linecache.getline
+        self.progress_callback = progress_callback
+        self.wait_for_prompt = True
 
     def _recv_all(self, size):
         pieces = []
@@ -155,7 +158,8 @@ class ReplayProcess(object):
         other = ReplayProcess(child_pid, s1,
                               breakpoints_cache=self.breakpoints_cache,
                               printed_objects=self.printed_objects,
-                              linecacheoutput=self.linecacheoutput)
+                              linecacheoutput=self.linecacheoutput,
+                              progress_callback=self.progress_callback)
         other.expect_ready()
         #print >> sys.stderr, 'CLONED', self.current_time
         return other
@@ -167,10 +171,31 @@ class ReplayProcess(object):
         except socket.error:
             pass
 
-    def forward(self, steps, breakpoint_mode):
+    def forward(self, steps, breakpoints_mode):
         """Move this subprocess forward in time.
         Returns the Breakpoint or None.
         """
+        if not self.progress_callback:
+            return self._forward(steps, breakpoints_mode)
+
+        resolution, callback = self.progress_callback
+        target_time = self.current_time + steps
+        next_tick = (self.current_time // resolution
+                     + 1 + self.wait_for_prompt) * resolution
+        self.wait_for_prompt = False
+        previous = None
+        while True:
+            steps = min(target_time, next_tick) - self.current_time
+            bkpt = self._forward(steps, breakpoints_mode)
+            if bkpt is not None or self.current_time >= target_time:
+                break
+            previous = callback(next_tick, previous)
+            next_tick += resolution
+
+        callback(None, previous)
+        return bkpt
+
+    def _forward(self, steps, breakpoint_mode):
         assert not self.tainted
 
         # <DEBUGGING ONLY>
@@ -248,14 +273,16 @@ class ReplayProcessGroup(object):
     STEP_RATIO = 0.25           # subprocess n is between subprocess n-1
                                 #   and the end, at this fraction of interval
 
-    def __init__(self, executable, revdb_log_filename, linecacheoutput=None):
+    def __init__(self, executable, revdb_log_filename, linecacheoutput=None,
+                 progress_callback=None):
         s1, s2 = socket.socketpair()
         initial_subproc = subprocess.Popen(
             [executable, '--revdb-replay', revdb_log_filename,
              str(s2.fileno())], preexec_fn=s1.close)
         s2.close()
         child = ReplayProcess(initial_subproc.pid, s1,
-                              linecacheoutput=linecacheoutput)
+                              linecacheoutput=linecacheoutput,
+                              progress_callback=progress_callback)
         msg = child.expect(ANSWER_INIT, INIT_VERSION_NUMBER, Ellipsis)
         self.total_stop_points = msg.arg2
         if self.total_stop_points == 0:
@@ -381,10 +408,10 @@ class ReplayProcessGroup(object):
             search_start_time = self.get_current_time()
             time_range_to_search = search_stop_time - search_start_time
             if time_range_to_search <= 0:
-                print "[search end]"
+                #print "[search end]"
                 return
-            print "[searching %d..%d]" % (search_start_time,
-                                          search_stop_time)
+            #print "[searching %d..%d]" % (search_start_time,
+            #                              search_stop_time)
             self.go_forward(time_range_to_search, breakpoint_mode='r')
             # If at least one breakpoint was found, the Breakpoint
             # exception is raised with the *last* such breakpoint.
