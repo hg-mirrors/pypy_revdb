@@ -67,8 +67,12 @@ Usage
     
     /path-to-reverse-debugging-pypy-repo/pypy/goal/pypy-c
     
-  It works like a (slow but) regular Python interpreter, so you can
-  make virtualenvs with it, or do any necessary preparation.
+  It works like a (slow but) regular Python interpreter, so you can make
+  virtualenvs with it, or do any necessary preparation.  You can even
+  install CPython C extension modules, which will work with PyPy's
+  cpyext support---which is, in itself, only a 99% solution: a few
+  CPython C extension modules may not to fully work in PyPy.  But if
+  they work in a regular PyPy they should work with the RevDB PyPy too.
 
 * **Recording:** When you are ready to run the program that you want to
   debug, use the ``REVDB`` environment variable to ask the above
