@@ -89,7 +89,7 @@ Usage
 * **Replaying:** Run ``/path/to/revdb/revdb.py log.rdb`` to start the
   debugger's user interface.  If you want to enable syntax coloring, add
   ``-c dark`` or ``-c light`` depending on whether you use a dark- or
-  light-background terminal.
+  light-background terminal (you need to install ``pygments``, then).
 
   Do not run this in the virtualenv you created in the previous step!
   This must run with a regular Python (CPython 2.7.x, or non-RevDB PyPy).
