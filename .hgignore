@@ -4,3 +4,4 @@ syntax: glob
 .*.swp
 _revdb/_ancillary_cffi.*
 build
+reverse-debugger
