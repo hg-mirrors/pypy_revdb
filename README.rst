@@ -135,22 +135,24 @@ commands.
 
 ``print``
 
-  ``print`` can run any Python code, including (single-line) statements.
-  It only prints the result if it was an expression and that expression
-  returns a result different from ``None``, like the interactive mode of
-  Python.
+  The ``print`` command can run any Python code, including (single-line)
+  statements.  It only prints the result if it was an expression and
+  that expression returns a result different from ``None``.  In other
+  words, it works like typing at Python's interactive mode does; it does
+  not work like Python's own ``print`` statement.
 
 ``$5 =``
 
-  Whenever a dynamic (i.e. non-prebuilt) object is printed, there is a
-  numeric prefix like ``$5 =``.  You can use the expression ``$5`` in
-  all future Python expressions; it stands for the same object.  It is
-  parsed as a regular expression, so you can say ``$5.foo`` or
-  ``len($5)`` etc.  It works even if you move at a different time in the
-  past or the future, as long as you don't move before the time where
-  that object was created.  Note that the existence of ``$5`` keeps the
-  object alive forever (it can be recalled even if you go far in the
-  future), but this doesn't change the program's results: the
+  Whenever a dynamic (i.e. non-prebuilt) object is printed, it is
+  printed with a numeric prefix, e.g. ``$5 =``.  You can use the
+  expression ``$5`` in all future Python expressions; it stands for the
+  same object.  The parser recognizes it as a standard subexpression, so
+  you can say ``$5.foo`` or ``len($5)`` etc.  It continues to work after
+  you move at a different time in the past or the future.  If you move
+  before the time of creation for this object, using ``$5`` will raise
+  an exception.  Note that the existence of ``$5`` keeps the object
+  alive forever (it can be recalled even if you go far in the future),
+  but this doesn't change the recorded program's own results: the
   ``__del__`` method is called, and weakrefs to ``$5`` go away, as per
   the recording.
 
@@ -165,7 +167,7 @@ commands.
   ``FILE`` matches any code object with a ``co_filename`` of the form
   ``/any/path/FILE``.  For example, if you set a breakpoint at
   ``foo.py:42`` it will break at the line 42 in any file called
-  ``/any/path/foo.py``.
+  ``/any/path/foo.py``.  (Breakpoints cannot be conditional for now.)
 
 ``nthread, bthread``
 
@@ -181,7 +183,7 @@ commands.
 
 ``watch``
 
-  ``watch`` puts a watchpoint.  This command is essential to that
+  ``watch`` puts a watchpoint.  This command is essential to RevDB's
   debugging approach!  Watchpoints are expressions that are evaluated
   outside any context, so they must not depend on any local or global
   variable.  They can depend on builtins, and they can use ``$NUM`` to
@@ -191,9 +193,8 @@ commands.
   changed.  Similarly, you can find out who changes the value of the
   global ``mod.GLOB``: first do ``print mod`` to get ``$4 =
   <module...>`` and then set a watchpoint on ``$4.GLOB``.  It may
-  occasionally be useful to set a watchpoint on just ``$5``: it is
-  means that you're watching for changes in the repr of this exact
-  object.
+  occasionally be useful to set a watchpoint on just ``$5``: it means
+  that you're watching for changes in the repr of this exact object.
 
   If you are a bit creative you can call a Python function from your
   program: first print the function itself, and then set a watchpoint
@@ -216,7 +217,7 @@ More notes:
 
 * When tracking a complex bug, it is recommended to write down the
   timeline on a piece of paper (or separate file).  Make sure you write
-  the timestamp for every event you record, and keep it ordered by
+  the timestamp for every event you record, and keep the log ordered by
   timestamp.  Write down which ``$NUM`` corresponds to the relevant
   objects.  All the timestamps that you write down are still valid if
   you leave and restart ``revdb.py``.  The ``$NUM`` are not, though.
