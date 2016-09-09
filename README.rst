@@ -23,6 +23,10 @@ to work on Windows so far.  Only Python 2.7 is implemented for now.
 
 This is the original blog post, which describes the basics:
 https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html
+(note that many of the limitations described in that blog post have
+been removed now: threads and cpyext are implemented; various crashes
+have been fixed; ``next``-style commands behave more reasonably now;
+``import`` in print statements is special-cased).
 
 
 Installation
@@ -98,9 +102,7 @@ to get a summary of all commands.
 (Write more here...)
 
 You can get a feel for the commands by following the blog post
-https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html
-(note that many of the limitations described in that blog post have
-been removed now).
+https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html.
 
 Below we give some description for the least obvious but most useful
 commands.
