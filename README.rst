@@ -127,10 +127,11 @@ commands.
   execution just finished running the main module.  There are more
   recorded timestamps afterwards, particularly if PyPy is then going to
   print a traceback, but you are generally not interested in that.  So
-  you typically say ``continue``, hit the stoppoint, and then issue
-  ``bstep`` a few times to reach the last interesting point (e.g. where
-  the exception was raised, assuming there was one).  You don't need any
-  more the ``os._exit(1)`` trick shown in the blog post.
+  after you start ``revdb.py`` you typically say ``continue``, hit the
+  stoppoint, and then say ``bstep`` a few times to reach the last
+  interesting point (e.g. where the exception was raised, assuming there
+  was one).  You don't need any more the ``os._exit()`` trick shown in
+  the blog post.
 
 ``print``
 
