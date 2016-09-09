@@ -206,10 +206,11 @@ More notes:
   first time we go over each timestamp.)
 
 * When tracking a complex bug, it is recommended to write down the
-  timeline on a piece of paper (or separate file).  Keep it ordered by
-  the timestamps of the relevant events as you find them, and write down
-  which ``$NUM`` corresponds to the relevant objects.  The timestamps
-  are kept if you leave and restart ``revdb.py``.  The ``$NUM`` are not,
-  though.  (This might be changed in the future.  For now it should be
-  easy to rebuild them manually by using ``go TIMESTAMP`` and repeating
-  the ``print`` commands.)
+  timeline on a piece of paper (or separate file).  Make sure you write
+  the timestamp for every event you record, and keep it ordered by
+  timestamp.  Write down which ``$NUM`` corresponds to the relevant
+  objects.  All the timestamps that you write down are still valid if
+  you leave and restart ``revdb.py``.  The ``$NUM`` are not, though.
+  (This might be changed in the future.  For now it should be easy to
+  rebuild them manually by using ``go TIMESTAMP`` and repeating the
+  ``print`` commands.)
