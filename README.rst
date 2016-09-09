@@ -57,7 +57,8 @@ takes about half an hour (which is long, but less than a normal PyPy).
   https://bitbucket.org/pypy/revdb (which is where the present README
   file originally lives).  It has got a small CFFI module, so you should
   run either ``python setup.py install`` (usually in a virtualenv) or
-  directly ``python setup.py build_ext --inplace``.
+  directly ``python setup.py build_ext --inplace``.  Use a regular
+  CPython 2.7.x here, or PyPy but not the RevDB version of PyPy.
 
 
 Usage
@@ -90,11 +91,16 @@ Usage
   ``-c dark`` or ``-c light`` depending on whether you use a dark- or
   light-background terminal.
 
-  Replaying only works if ``revdb.py`` can find the *very same* version
-  of ``pypy-c``.  With that restriction, you could in theory move that
-  ``log.rdb`` file on another machine and debug there, if the ``pypy-c``
-  executable and associated ``libpypy-c.so`` work when copied unchanged
-  on that machine too.
+  Do not run this in the virtualenv you created in the previous step!
+  This must run with a regular Python (CPython 2.7.x, or non-RevDB PyPy).
+
+  Replaying works by having ``revdb.py`` find the ``pypy-c`` of RevDB
+  and internally executing it in a special mode.  It looks at the path
+  recorded in the log file (but see also the ``-x`` argument).  It must
+  find the *very same* version of ``pypy-c``.  With that restriction,
+  you could in theory move that ``log.rdb`` file on another machine and
+  debug there, if the ``pypy-c`` executable and associated
+  ``libpypy-c.so`` work when copied unchanged on that machine too.
 
 
 Debugger User Interface
