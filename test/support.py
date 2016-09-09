@@ -4,7 +4,7 @@ def setup_sys_path():
     """Set up sys.path so that we can import rpython from the
     reverse-debugger branch.  We expect to find a checkout of
     the complete rpython in the "../reverse-debugger" subdirectory,
-    which could can also create a symlink if you prefer.
+    which could also be a symlink if you prefer.
     """
     par_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     lnk = os.path.join(par_dir, 'reverse-debugger')
