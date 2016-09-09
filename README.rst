@@ -77,16 +77,16 @@ Usage
   you get a ``log.rdb`` that we will use next.  The same ``log.rdb`` can
   be used any number of times for replaying.
 
-  (Replaying only works if it can find the *very same* version of
-  ``pypy-c``.  With that restriction, you could in theory move that
-  ``log.rdb`` file on another machine and debug there, if the ``pypy-c``
-  executable and associated ``libpypy-c.so`` work when copied unchanged
-  on that machine too.)
-
 * **Replaying:** Run ``/path/to/revdb/revdb.py log.rdb`` to start the
   debugger's user interface.  If you want to enable syntax coloring, add
   ``-c dark`` or ``-c light`` depending on whether you use a dark- or
   light-background terminal.
+
+* Replaying only works if it can find the *very same* version of
+  ``pypy-c``.  With that restriction, you could in theory move that
+  ``log.rdb`` file on another machine and debug there, if the ``pypy-c``
+  executable and associated ``libpypy-c.so`` work when copied unchanged
+  on that machine too.
 
 
 Debugger User Interface
@@ -105,51 +105,71 @@ been removed now).
 Below we give some description for the least obvious but most useful
 commands.
 
-* ``print`` can run any Python code, including (single-line) statements.
+``print``
+
+  ``print`` can run any Python code, including (single-line) statements.
   It only prints the result if it was an expression and that expression
   returns a result different from ``None``, like the interactive mode of
   Python.
 
-* Whenever a dynamic (i.e. non-prebuilt) object is printed, there is
+``$5 =``
+
+  Whenever a dynamic (i.e. non-prebuilt) object is printed, there is
   a numeric prefix like ``$5 =``.  You can use the expression ``$5``
   in all future Python expressions; it stands for the same object.  It
   works even if you move at a different time, as long as you don't move
-  before the time where that objecte is created.
+  before the time where that object was created.
 
-* ``break`` puts a breakpoint, either by line number or by function
+``break``
+
+  ``break`` puts a breakpoint, either by line number or by function
   name.  If you say ``break foo`` or ``break foo()`` with empty
   parentheses, the breakpoint activates whenever a function with the
   name ``foo`` is called.  To set a breakpoint by line number, use
   either ``break NUM`` or ``break FILE:NUM``.  The ``FILE`` defaults to
   the ``co_filename`` of the current code object.  If given explicitly,
-  it will match any code object with a ``co_filename`` that *ends* in
-  ``FILE``, so if you set a breakpoint at ``foo.py:42`` it will break
-  at the line 42 in any file called ``/any/path/foo.py``.
+  it will match any code object with a ``co_filename`` of the form
+  ``/any/path/FILE``.  For example, if you set a breakpoint at
+  ``foo.py:42`` it will break at the line 42 in any file called
+  ``/any/path/foo.py``.
 
-* Multithreaded programs are handled correctly.  As usual with the GIL,
+``nthread, bthread``
+
+  Multithreaded programs are handled correctly.  As usual with the GIL,
   in the recording session only one thread can run Python bytecodes at a
   time; so during replaying (i.e. now) you see bytecodes executed
   sequentially.  ``revdb.py`` displays a marker line whenever the next
   place it displays is actually from a different thread than the last.
   Typically, thread switches occur rarely.  You can use the ``nthread``
   and ``bthread`` commands to go forward or backward until a thread
-  switch occurs (either going to any other thread, or going to a precise
-  thread).
+  switch occurs (either going to any different thread, or going
+  precisely to the thread with the given number).
 
-* ``watch`` puts a watchpoint.  This command is essential to debug!
-  Watchpoints are expressions that are evaluated outside any context, so
-  they must not depend on any local or global variable.  They can depend
-  on builtins, and they can use ``$5`` to reference any
-  previously-printed object.  If you are a bit creative you can call a
-  Python function from your program: first printing the function, and
-  then set a watchpoint on, say, ``$5() > 100``.  However, watchpoint
-  expressions must be fully side-effect-free, otherwise replaying will
-  get out of sync and crash.  (``revdb.py`` can usually recover from
-  such crashes and let you continue.)
+``watch``
 
-* When ``revdb.py`` is busy moving in time, it prints the progress,
-  for example as ``(1500000...)``.  If you messed up, or simply are not
-  interested in it continuing searching are a while, you can safely
+  ``watch`` puts a watchpoint.  This command is essential to that
+  debugging approach!  Watchpoints are expressions that are evaluated
+  outside any context, so they must not depend on any local or global
+  variable.  They can depend on builtins, and they can use ``$NUM`` to
+  reference any previously-printed object.  Usually we watch ``$2.foo``
+  to find where the attribute ``foo`` on this precise object ``$2``
+  changed; or ``len($3)`` to find where the length of the list ``$3``
+  changed.  Similarly, you can find out who changes the value of the
+  global ``mod.GLOB``: first do ``print mod`` to get ``$4 =
+  <module...>``; then set a watchpoint on ``$4.GLOB``.
+
+  If you are a bit creative you can call a Python function from your
+  program: first print the function itself, and then set a watchpoint
+  on, say, ``$5() > 100``.  However, watchpoint expressions must be
+  fully side-effect-free, otherwise replaying will get out of sync and
+  crash.  (``revdb.py`` can usually recover from such crashes and let
+  you continue.)
+
+``(1500000...)``
+
+  When ``revdb.py`` is busy moving in time, it prints the progress, for
+  example as ``(1500000...)``.  If you messed up, or simply are not
+  interested in it continuing searching after a while, you can safely
   press Ctrl-C to have it stop and jump back to the timestamp it was
   previously at.  This is particularly important with watchpoints,
   because they make running a lot slower.  (You should anyway delete
