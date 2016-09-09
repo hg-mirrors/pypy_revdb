@@ -26,7 +26,7 @@ https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html
 (note that many of the limitations described in that blog post have
 been removed now: threads and cpyext are implemented; various crashes
 have been fixed; ``next``-style commands behave more reasonably now;
-``import`` in print statements is special-cased).
+``import`` in ``!`` commands is special-cased).
 
 
 Installation
@@ -139,7 +139,9 @@ commands.
   statements.  It only prints the result if it was an expression and
   that expression returns a result different from ``None``.  In other
   words, it works like typing at Python's interactive mode does; it does
-  not work like Python's own ``print`` statement.
+  not work like Python's own ``print`` statement.  It is sometimes
+  clearer to use ``!``, which is another abbreviation of ``print`` or
+  ``p``.
 
 ``$5 =``
 
