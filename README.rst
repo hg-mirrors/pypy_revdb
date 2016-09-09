@@ -111,6 +111,14 @@ https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html.
 Below we give some description for the least obvious but most useful
 commands.
 
+``(123456)$``
+
+  This is the prompt, which displays the current timestamp.  The
+  timestamp fully identifies the position in the log.  Use ``go`` to
+  jump directly to some timestamp number.  Use ``step``/``bstep`` to do
+  single-timestamp steps.  Other commands step by more, like ``next``
+  and ``finish`` and their ``b`` variants.
+
 ``continue``
 
   This is usually the first command you give, to go to the last
