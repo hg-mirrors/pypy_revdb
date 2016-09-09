@@ -107,6 +107,18 @@ https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html.
 Below we give some description for the least obvious but most useful
 commands.
 
+``continue``
+
+  This is usually the first command you give, to go to the last
+  timestamp before stepping back.  A breakpoint-like "stoppoint" is
+  set automatically and is always present: it activates at the time
+  when execution just finished running the main module.  There are
+  more recorded timestamps afterwards, particularly if PyPy is then
+  going to print a traceback, but you are generally not interested in
+  that.  So you typically say ``continue``, hit the stoppoint, and
+  then issue ``bstep`` a few times to reach the last interesting point
+  (e.g. where the exception was raised, assuming there was one).
+
 ``print``
 
   ``print`` can run any Python code, including (single-line) statements.
