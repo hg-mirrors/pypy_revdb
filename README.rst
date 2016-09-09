@@ -80,7 +80,7 @@ Usage
 
     REVDB=log.rdb  /.../pypy/goal/pypy-c  yourprogr.py  arguments...
 
-* You can repeat the step above until you succeed in logging an
+  You can repeat the step above until you succeed in logging an
   execution that exhibits the bug that you are tracking.  Once you do,
   you get a ``log.rdb`` that we will use next.  The same ``log.rdb`` can
   be used any number of times for replaying.
@@ -90,7 +90,7 @@ Usage
   ``-c dark`` or ``-c light`` depending on whether you use a dark- or
   light-background terminal.
 
-* Replaying only works if it can find the *very same* version of
+  Replaying only works if it can find the *very same* version of
   ``pypy-c``.  With that restriction, you could in theory move that
   ``log.rdb`` file on another machine and debug there, if the ``pypy-c``
   executable and associated ``libpypy-c.so`` work when copied unchanged
