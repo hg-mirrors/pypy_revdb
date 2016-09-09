@@ -110,14 +110,15 @@ commands.
 ``continue``
 
   This is usually the first command you give, to go to the last
-  timestamp before stepping back.  A breakpoint-like "stoppoint" is
-  set automatically and is always present: it activates at the time
-  when execution just finished running the main module.  There are
-  more recorded timestamps afterwards, particularly if PyPy is then
-  going to print a traceback, but you are generally not interested in
-  that.  So you typically say ``continue``, hit the stoppoint, and
-  then issue ``bstep`` a few times to reach the last interesting point
-  (e.g. where the exception was raised, assuming there was one).
+  timestamp before stepping back.  A breakpoint-like "stoppoint" is set
+  automatically and is always present: it activates at the time when
+  execution just finished running the main module.  There are more
+  recorded timestamps afterwards, particularly if PyPy is then going to
+  print a traceback, but you are generally not interested in that.  So
+  you typically say ``continue``, hit the stoppoint, and then issue
+  ``bstep`` a few times to reach the last interesting point (e.g. where
+  the exception was raised, assuming there was one).  You don't need any
+  more the ``os._exit(1)`` trick shown in the blog post.
 
 ``print``
 
@@ -132,7 +133,8 @@ commands.
   a numeric prefix like ``$5 =``.  You can use the expression ``$5``
   in all future Python expressions; it stands for the same object.  It
   works even if you move at a different time, as long as you don't move
-  before the time where that object was created.
+  before the time where that object was created.  "``$5``" is parsed as
+  an expression, so you can say ``$5.foo`` or ``len($5)`` etc.
 
 ``break``
 
