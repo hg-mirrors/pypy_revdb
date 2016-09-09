@@ -177,7 +177,7 @@ class TestThreadLocal(InteractiveTests):
     expected_stop_points = 2
 
     def setup_class(cls):
-        from rpython.translator.revdb.test.test_basic import compile, run
+        from test_basic import compile, run
         class EC(object):
             def __init__(self, value):
                 self.value = value
