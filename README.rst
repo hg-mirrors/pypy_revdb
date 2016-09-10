@@ -84,12 +84,16 @@ Usage
   You can repeat the step above until you succeed in logging an
   execution that exhibits the bug that you are tracking.  Once you do,
   you get a ``log.rdb`` that we will use next.  The same ``log.rdb`` can
-  be used any number of times for replaying.
+  be used any number of times for replaying.  In case of doubt, if it
+  was hard to obtain, make a safe copy.
 
-* **Replaying:** Run ``/path/to/revdb/revdb.py log.rdb`` to start the
-  debugger's user interface.  If you want to enable syntax coloring, add
-  ``-c dark`` or ``-c light`` depending on whether you use a dark- or
-  light-background terminal (you need to install ``pygments``, then).
+* **Replaying:** start the debugger's user interface::
+
+    /path/to/revdb/revdb.py  log.rdb
+
+  If you want to enable syntax coloring, add ``-c dark`` or ``-c light``
+  depending on whether you use a dark- or light-background terminal (you
+  need to install ``pygments``, then).
 
   Do not run this in the virtualenv you created in the previous step!
   This must run with a regular Python (CPython 2.7.x, or non-RevDB PyPy).
@@ -101,6 +105,21 @@ Usage
   you could in theory move that ``log.rdb`` file on another machine and
   debug there, if the ``pypy-c`` executable and associated
   ``libpypy-c.so`` work when copied unchanged on that machine too.
+
+Note that the log file typically grows at a rate of 1-2 MB per second.
+Assuming size is not a problem, the limiting factor are:
+
+1. Replaying time.  If your recorded execution took more than a few
+   minutes, replaying will be painfully slow.  It sometimes needs to go
+   over the whole log several times in a single session.  If the bug
+   occurs randomly but rarely, you should run recording for a few
+   minutes, then kill the process and try again, repeatedly until you
+   get the crash.
+
+2. RAM usage for replaying.  The RAM requirements are 10 or 15 times
+   larger for replaying than for recording.  If that is too much, you
+   can try with a lower value for ``MAX_SUBPROCESSES`` in
+   ``_revdb/process.py``, but it will always be several times larger.
 
 
 Debugger User Interface
@@ -146,14 +165,14 @@ commands.
   that expression returns a result different from ``None``.  In other
   words, it works like typing at Python's interactive mode does; it does
   not work like Python's own ``print`` statement.  It is sometimes
-  clearer to use ``!``, which is another abbreviation of ``print`` or
+  clearer to use ``!``, which is another abbreviation for ``print`` or
   ``p``.
 
 ``$5 =``
 
   Whenever a dynamic (i.e. non-prebuilt) object is printed, it is
-  printed with a numeric prefix, e.g. ``$5 =``.  You can use the
-  expression ``$5`` in all future Python expressions; it stands for the
+  printed with a numeric prefix, e.g. ``$5 =``.  Afterwards, you can use
+  the expression ``$5`` in all Python expressions; it stands for the
   same object.  The parser recognizes it as a standard subexpression, so
   you can say ``$5.foo`` or ``len($5)`` etc.  It continues to work after
   you move at a different time in the past or the future.  If you move
