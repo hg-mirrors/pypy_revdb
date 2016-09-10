@@ -242,6 +242,11 @@ More notes:
   might cache the watchpoint results so that they are only evaluated the
   first time we go over each timestamp.)
 
+* Setting a watchpoint or printing a ``$NUM`` in the past requires
+  a rescan of the log file from the time of creation of that object
+  (once).  If ``$NUM`` is an object created very early in the process,
+  you will have to wait (or use Ctrl-C).
+
 * When tracking a complex bug, it is recommended to write down the
   timeline on a piece of paper (or separate file).  Make sure you write
   the timestamp for every event you record, and keep the log ordered by
