@@ -13,6 +13,30 @@ _sleep = rffi.llexternal('sleep', [rffi.UINT], rffi.UINT)
 
 class TestThreadRecording(BaseRecordingTests):
 
+    def in_parallel(self, rdb, th1, th2, geninsns1, geninsns2, final_thread):
+        assert final_thread in (1, 2)
+
+        def _switch(th2):
+            got = rdb.switch_thread(expected=th2[0] if th2 else None)
+            if th2:
+                assert th2[0] == got
+            else:
+                th2.append(got)
+
+        while geninsns1 or geninsns2:
+            if rdb.is_special_packet():
+                # thread switch
+                _switch(th2)
+                th1, th2, geninsns1, geninsns2 = th2, th1, geninsns2, geninsns1
+                final_thread = 3 - final_thread
+            else:
+                try:
+                    geninsns1.next()
+                except StopIteration:
+                    geninsns1 = None
+        if final_thread == 2:
+            _switch(th2)
+
     def test_thread_simple(self):
         def bootstrap():
             rthread.gc_thread_start()
@@ -37,17 +61,27 @@ class TestThreadRecording(BaseRecordingTests):
         th_A = rdb.main_thread_id
         rdb.write_call("A\n")
         rdb.same_stack()      # RPyGilAllocate()
-        rdb.gil_release()
 
-        th_B = rdb.switch_thread()
-        assert th_B != th_A
-        b = rdb.next('!h'); assert 300 <= b < 310   # "callback": start thread
-        rdb.gil_acquire()
-        rdb.gil_release()
+        th_B_container = []
 
-        rdb.switch_thread(th_A)
-        rdb.same_stack()      # start_new_thread returns
-        x = rdb.next(); assert x == th_B    # result is the 'th_B' id
+        def from_th_A():
+            rdb.gil_release()
+            yield
+            rdb.same_stack()                   # start_new_thread returns
+            [th_B] = th_B_container
+            x = rdb.next(); assert x == th_B   # result is the 'th_B' id
+
+        def from_th_B():
+            b = rdb.next('!h'); assert 300 <= b < 310 #"callback": start thread
+            yield
+            rdb.gil_acquire()
+            yield
+            rdb.gil_release()
+
+        self.in_parallel(rdb, [th_A], th_B_container, from_th_A(), from_th_B(),
+                         final_thread=1)
+        [th_B] = th_B_container
+
         rdb.gil_acquire()
         rdb.gil_release()
 
