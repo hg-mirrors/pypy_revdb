@@ -256,3 +256,14 @@ More notes:
   (This might be changed in the future.  For now it should be easy to
   rebuild them manually by using ``go TIMESTAMP`` and repeating the
   ``print`` commands.)
+
+
+Contact information
+===================
+
+IRC: #pypy on irc.freenode.net
+
+Mailing list: pypy-dev@python.org
+
+RevDB is made by Armin Rigo, but thanks go to the rest of the PyPy team
+as well.
