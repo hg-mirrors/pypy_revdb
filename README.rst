@@ -35,7 +35,7 @@ Installation
 You need to download and build a special version of PyPy.  Sorry, there
 are not prebuilt binaries at this point in time.  This is mainly because
 distributing Linux binaries is a mess.  Note that the building process
-takes about half an hour (which is long, but less than a normal PyPy).
+takes 20 to 30 minutes (which is long, but less than a normal PyPy).
 
 * If you don't have a PyPy repository already downloaded, you can
   download directly the correct revision from
