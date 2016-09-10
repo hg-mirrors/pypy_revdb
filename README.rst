@@ -265,5 +265,9 @@ IRC: #pypy on irc.freenode.net
 
 Mailing list: pypy-dev@python.org
 
+You can report issues in the `issue tracker`__ of RevDB.
+
+.. __: https://bitbucket.org/pypy/revdb/issues?status=new&status=open
+
 RevDB is made by Armin Rigo, but thanks go to the rest of the PyPy team
 as well.
