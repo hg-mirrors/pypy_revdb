@@ -37,6 +37,31 @@ class TestThreadRecording(BaseRecordingTests):
         if final_thread == 2:
             _switch(th2)
 
+    def start_thread_B(self, rdb, th_A):
+        th_B_container = []
+
+        def from_th_A():
+            rdb.gil_release()
+            yield
+            rdb.same_stack()                   # start_new_thread returns
+            x = rdb.next()                     # result is the 'th_B' id
+            if th_B_container:
+                assert [x] == th_B_container
+            else:
+                tb_B_container.append(x)
+
+        def from_th_B():
+            b = rdb.next('!h'); assert 300 <= b < 310 #"callback": start thread
+            yield
+            rdb.gil_acquire()
+            yield
+            rdb.gil_release()
+
+        self.in_parallel(rdb, [th_A], th_B_container, from_th_A(), from_th_B(),
+                         final_thread=1)
+        [th_B] = th_B_container
+        return th_B
+
     def test_thread_simple(self):
         def bootstrap():
             rthread.gc_thread_start()
@@ -62,25 +87,7 @@ class TestThreadRecording(BaseRecordingTests):
         rdb.write_call("A\n")
         rdb.same_stack()      # RPyGilAllocate()
 
-        th_B_container = []
-
-        def from_th_A():
-            rdb.gil_release()
-            yield
-            rdb.same_stack()                   # start_new_thread returns
-            [th_B] = th_B_container
-            x = rdb.next(); assert x == th_B   # result is the 'th_B' id
-
-        def from_th_B():
-            b = rdb.next('!h'); assert 300 <= b < 310 #"callback": start thread
-            yield
-            rdb.gil_acquire()
-            yield
-            rdb.gil_release()
-
-        self.in_parallel(rdb, [th_A], th_B_container, from_th_A(), from_th_B(),
-                         final_thread=1)
-        [th_B] = th_B_container
+        th_B = self.start_thread_B(rdb, th_A)
 
         rdb.gil_acquire()
         rdb.gil_release()
@@ -143,17 +150,9 @@ class TestThreadRecording(BaseRecordingTests):
         rdb = self.fetch_rdb([self.exename, 'Xx'])
         th_A = rdb.main_thread_id
         rdb.same_stack()      # RPyGilAllocate()
-        rdb.gil_release()
 
-        th_B = rdb.switch_thread()
-        assert th_B != th_A
-        b = rdb.next('!h'); assert 300 <= b < 310   # "callback": start thread
-        rdb.gil_acquire()
-        rdb.gil_release()
+        th_B = self.start_thread_B(rdb, th_A)
 
-        rdb.switch_thread(th_A)
-        rdb.same_stack()      # start_new_thread returns
-        x = rdb.next(); assert x == th_B    # result is the 'th_B' id
         rdb.gil_acquire()
         rdb.gil_release()
 
