@@ -212,7 +212,7 @@ class TestRecording(BaseRecordingTests):
             if triggered:
                 lst = []
                 while True:
-                    uid = intmask(rdb.next())
+                    uid = intmask(rdb.next('q'))
                     if uid == -1:
                         break
                     assert uid > 0 and uid not in uid_seen
@@ -245,7 +245,7 @@ class TestRecording(BaseRecordingTests):
                 time, = rdb.special_packet(ASYNC_FINALIZER_TRIGGER, 'q')
                 assert time == i + 1
                 triggered = True
-                x = intmask(rdb.next())
+                x = intmask(rdb.next('q'))
                 while True:
                     assert x != -1
                     assert x not in seen_uids
@@ -253,7 +253,7 @@ class TestRecording(BaseRecordingTests):
                     rdb.same_stack()
                     y = intmask(rdb.next())
                     assert y == -7      # from the __del__
-                    x = intmask(rdb.next())
+                    x = intmask(rdb.next('q'))
                     if x == -1:
                         break
             rdb.same_stack()

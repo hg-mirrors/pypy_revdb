@@ -27,8 +27,8 @@ class RDB(object):
         assert header == 'RevDB:\t' + '\t'.join(expected_argv) + '\n\x00'
         #
         x = self.read1('P'); assert x == 0x00FF0003
-        x = self.read1('P'); self.main_thread_id = x
-        x = self.read1('P'); assert x == 0
+        x = self.read1('q'); self.main_thread_id = x
+        x = self.read1('q'); assert x == 0
         x = self.read1('P'); #assert x == &rpy_reverse_db_stop_point
         x = self.read1('P'); #assert x == &rpy_revdb
         x = self.read1('i'); assert x == 0
