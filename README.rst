@@ -15,6 +15,10 @@ It is similar to `undodb-gdb`_ and `rr`_, which are reverse debuggers
 for C code.  RevDB does not allow you to step in or inspect things at
 the level of C: it works purely on Python.
 
+For more information about what reverse debugging is, have a look at
+https://en.wikipedia.org/wiki/Debugger#Reverse_debugging and
+http://programmers.stackexchange.com/questions/181527/why-is-reverse-debugging-rarely-used.
+
 .. _`undodb-gdb`: http://undo.io/
 .. _`rr`: http://rr-project.org/
 
