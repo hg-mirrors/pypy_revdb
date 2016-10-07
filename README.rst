@@ -51,6 +51,8 @@ takes 20 to 30 minutes (which is long, but less than a normal PyPy).
 
 * Make sure you have the dependencies installed:
   http://pypy.readthedocs.org/en/latest/build.html#install-build-time-dependencies
+  (note that for RevDB you need the Boehm garbage collector ``libgc``,
+  even if you don't plan to run PyPy's tests).
 
 * Build the revdb version of PyPy::
 
