@@ -2,7 +2,7 @@ import py, weakref
 import support    # set up sys.path
 from rpython.rlib import revdb, rgc
 from rpython.rlib.debug import debug_print
-from rpython.rlib.objectmodel import keepalive_until_here
+from rpython.rlib.objectmodel import keepalive_until_here, compute_unique_id
 from rpython.rlib.rarithmetic import intmask
 from _revdb.message import *
 from test_basic import BaseRecordingTests
@@ -262,6 +262,17 @@ class TestRecording(BaseRecordingTests):
         assert len(seen_uids) == int(out)
         rdb.write_call(out)
         x = rdb.next('q'); assert x == 3000    # number of stop points
+
+    def test_compute_unique_id(self):
+        def main(argv):
+            for x in ['prebuilt1', 'prebuilt2', 'prebuilt3'] + argv:
+                print compute_unique_id(x)
+            return 9
+        self.compile(main)
+        out = self.run('Xx')
+        ids = map(int, out.splitlines())
+        assert len(ids) == 5
+        assert len(set(ids)) == 5     # 5 different id's
 
 
 class TestReplayingWeakref(InteractiveTests):
