@@ -161,8 +161,13 @@ commands.
   after you start ``revdb.py`` you typically say ``continue``, hit the
   stoppoint, and then say ``bstep`` a few times to reach the last
   interesting point (e.g. where the exception was raised, assuming there
-  was one).  You don't need any more the ``os._exit()`` trick shown in
-  the blog post.
+  was one).
+  
+  Note another trick, useful if running tests: it's hard to go to the
+  correct place if the testing framework does a lot of extra things
+  after the failure occurs.  Then you can put ``os._exit(1)`` in your
+  test instead of, say, the failing assert; and then when replaying,
+  ``continue`` will go to that place.
 
 ``print``
 
