@@ -91,7 +91,7 @@ class Message(object):
     started with --revdb-replay.
     """
 
-    def __init__(self, cmd, arg1=0, arg2=0, arg3=0, extra=""):
+    def __init__(self, cmd, arg1=0, arg2=0, arg3=0, extra=b""):
         self.cmd = cmd
         self.arg1 = arg1
         self.arg2 = arg2

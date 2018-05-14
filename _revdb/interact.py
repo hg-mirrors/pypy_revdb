@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, re
 import subprocess, socket
 import traceback, linecache
@@ -24,9 +25,9 @@ class RevDebugControl(object):
                  pygments_background=None):
         with open(revdb_log_filename, 'rb') as f:
             header = f.readline()
-        assert header.endswith('\n')
-        fields = header[:-1].split('\t')
-        if len(fields) < 2 or fields[0] != 'RevDB:':
+        assert header.endswith(b'\n')
+        fields = header[:-1].split(b'\t')
+        if len(fields) < 2 or fields[0] != b'RevDB:':
             raise ValueError("file %r is not a RevDB log" % (
                 revdb_log_filename,))
         if executable is None:
@@ -52,11 +53,11 @@ class RevDebugControl(object):
                     prompt = self.print_lines_before_prompt()
             except KeyboardInterrupt:
                 rtime = self.previous_time or 1
-                print ERASE_LINE
-                print 'KeyboardInterrupt: restoring state at time %d...' % (
-                    rtime,)
+                print(ERASE_LINE)
+                print('KeyboardInterrupt: restoring state at time %d...' % (
+                    rtime,))
                 self.pgroup.recreate_subprocess(rtime)
-                print "(type 'q' or Ctrl-D to quit)"
+                print("(type 'q' or Ctrl-D to quit)")
                 self.last_command = ''
                 self.previous_thread = '?'
                 self.previous_time = '?'
@@ -64,22 +65,22 @@ class RevDebugControl(object):
     def print_lines_before_prompt(self):
         last_time = self.pgroup.get_current_time()
         if last_time != self.previous_time:
-            print ERASE_LINE
+            print(ERASE_LINE)
             if self.pgroup.get_current_thread() != self.previous_thread:
                 self.previous_thread = self.pgroup.get_current_thread()
                 if self.previous_thread == 0:
-                    print ('-------------------- in main thread #0 '
-                           '--------------------')
+                    print('-------------------- in main thread #0 '
+                          '--------------------')
                 else:
-                    print ('-------------------- in non-main thread '
-                           '#%d --------------------' % (self.previous_thread,))
+                    print('-------------------- in non-main thread '
+                          '#%d --------------------' % (self.previous_thread,))
             self.pgroup.update_watch_values()
             last_time = self.pgroup.get_current_time()
         if last_time != self.previous_time:
             self.pgroup.show_backtrace(complete=0)
             self.previous_time = last_time
         if self.print_extra_pending_info:
-            print self.print_extra_pending_info
+            print(self.print_extra_pending_info)
             self.print_extra_pending_info = None
         prompt = '(%d)$ ' % last_time
         return prompt
@@ -87,9 +88,13 @@ class RevDebugControl(object):
     def display_prompt(self, prompt):
         self.pgroup.wait_for_prompt = True
         try:
-            cmdline = raw_input(prompt).strip()
+            raw_input1 = raw_input
+        except NameError:
+            raw_input1 = input
+        try:
+            cmdline = raw_input1(prompt).strip()
         except EOFError:
-            print
+            print()
             cmdline = 'quit'
         if not cmdline:
             cmdline = self.last_command
@@ -104,7 +109,7 @@ class RevDebugControl(object):
         try:
             runner = getattr(self, 'command_' + command)
         except AttributeError:
-            print >> sys.stderr, "no command '%s', try 'help'" % (command,)
+            print("no command '%s', try 'help'" % (command,), file=sys.stderr)
         else:
             try:
                 runner(argument)
@@ -112,17 +117,17 @@ class RevDebugControl(object):
                 raise
             except Exception as e:
                 traceback.print_exc()
-                print >> sys.stderr
-                print >> sys.stderr, 'Something went wrong.  You are now',
-                print >> sys.stderr, 'in a pdb; press Ctrl-D to continue.'
+                print(file=sys.stderr)
+                print('Something went wrong.  You are now '
+                      'in a pdb; press Ctrl-D to continue.', file=sys.stderr)
                 import pdb; pdb.post_mortem(sys.exc_info()[2])
-                print >> sys.stderr
-                print >> sys.stderr, 'You are back running %s.' % (
-                    sys.argv[0],)
+                print(file=sys.stderr)
+                print('You are back running %s.' % (sys.argv[0],),
+                      file=sys.stderr)
 
     def command_help(self, argument):
         """Display commands summary"""
-        print 'Available commands:'
+        print('Available commands:')
         lst = dir(self)
         commands = [(name[len('command_'):], getattr(self, name))
                     for name in lst
@@ -135,7 +140,7 @@ class RevDebugControl(object):
                 names = seen.pop(func)
                 names.sort(key=len, reverse=True)
                 docstring = func.__doc__ or 'undocumented'
-                print '\t%-16s %s' % (', '.join(names), docstring)
+                print('\t%-16s %s' % (', '.join(names), docstring))
 
     def command_quit(self, argument):
         """Exit the debugger"""
@@ -155,17 +160,17 @@ class RevDebugControl(object):
 
     def cmd_info_help(self):
         """Display info topics summary"""
-        print 'Available info topics:'
+        print('Available info topics:')
         for name in dir(self):
             if name.startswith('cmd_info_'):
                 command = name[len('cmd_info_'):]
                 docstring = getattr(self, name).__doc__ or 'undocumented'
-                print '\tinfo %-12s %s' % (command, docstring)
+                print('\tinfo %-12s %s' % (command, docstring))
 
     def cmd_info_paused(self):
         """List current paused subprocesses"""
         lst = [str(n) for n in sorted(self.pgroup.paused)]
-        print ', '.join(lst)
+        print(', '.join(lst))
 
     def _bp_kind(self, num):
         break_at = self.pgroup.all_breakpoints.num2break.get(num, '??')
@@ -201,13 +206,13 @@ class RevDebugControl(object):
 
     def cmd_info_breakpoints(self):
         """List current breakpoints and watchpoints"""
-        lst = self.pgroup.all_breakpoints.num2break.keys()
+        lst = list(self.pgroup.all_breakpoints.num2break.keys())
         if lst:
             for num in sorted(lst):
                 kind, name = self._bp_kind(num)
-                print '\t%s %d: %s' % (kind, num, name)
+                print('\t%s %d: %s' % (kind, num, name))
         else:
-            print 'no breakpoints/watchpoints.'
+            print('no breakpoints/watchpoints.')
     cmd_info_watchpoints = cmd_info_breakpoints
 
     def move_forward(self, steps):
@@ -346,7 +351,7 @@ class RevDebugControl(object):
         """Run forward until the current function finishes"""
         stack_id = self.pgroup.get_stack_id(is_parent=True)
         if stack_id == 0:
-            print 'No caller.'
+            print('No caller.')
         else:
             with self._stack_id_break(stack_id):
                 self.command_continue('')
@@ -355,7 +360,7 @@ class RevDebugControl(object):
         """Run backward until the current function is called"""
         stack_id = self.pgroup.get_stack_id(is_parent=True)
         if stack_id == 0:
-            print 'No caller.'
+            print('No caller.')
         else:
             with self._stack_id_break(stack_id):
                 self.command_bcontinue('')
@@ -376,7 +381,7 @@ class RevDebugControl(object):
         if argument:
             arg = int(argument)
             if arg == self.pgroup.get_current_thread():
-                print 'Thread #%d is already the current one.' % (arg,)
+                print('Thread #%d is already the current one.' % (arg,))
                 return
         else:
             # use the current thread number to detect switches to any
@@ -420,16 +425,16 @@ class RevDebugControl(object):
     def command_break(self, argument):
         """Add a breakpoint"""
         if not argument:
-            print "Break where?"
+            print("Break where?")
             return
         num = self._bp_new(argument, 'B', argument)
         self.pgroup.update_breakpoints()
         b = self.pgroup.edit_breakpoints()
         if num not in b.num2break:
-            print "Breakpoint not added"
+            print("Breakpoint not added")
         else:
             kind, name = self._bp_kind(num)
-            print "Breakpoint %d added: %s" % (num, name)
+            print("Breakpoint %d added: %s" % (num, name))
     command_b = command_break
 
     def command_delete(self, argument):
@@ -442,41 +447,41 @@ class RevDebugControl(object):
                 if self._bp_kind(arg)[1] == argument:
                     break
             else:
-                print "No such breakpoint/watchpoint: %s" % (argument,)
+                print("No such breakpoint/watchpoint: %s" % (argument,))
                 return
         if arg not in b.num2break:
-            print "No breakpoint/watchpoint number %d" % (arg,)
+            print("No breakpoint/watchpoint number %d" % (arg,))
         else:
             kind, name = self._bp_kind(arg)
             b.num2break.pop(arg, '')
             b.sources.pop(arg, '')
             b.watchvalues.pop(arg, '')
             b.watchuids.pop(arg, '')
-            print "%s %d deleted: %s" % (kind.capitalize(), arg, name)
+            print("%s %d deleted: %s" % (kind.capitalize(), arg, name))
     command_del = command_delete
 
     def command_watch(self, argument):
         """Add a watchpoint (use $NUM in the expression to watch)"""
         if not argument:
-            print "Watch what?"
+            print("Watch what?")
             return
         #
         ok_flag, compiled_code = self.pgroup.compile_watchpoint_expr(argument)
         if not ok_flag:
-            print compiled_code     # the error message
-            print 'Watchpoint not added'
+            print(compiled_code)     # the error message
+            print('Watchpoint not added')
             return
         #
         nids = map(int, r_dollar_num.findall(argument))
         ok_flag, text = self.pgroup.check_watchpoint_expr(compiled_code, nids)
         if not ok_flag:
-            print text
-            print 'Watchpoint not added'
+            print(text)
+            print('Watchpoint not added')
             return
         #
         new = self._bp_new(argument, 'W', compiled_code, nids=nids)
         self.pgroup.update_watch_values()
-        print "Watchpoint %d added" % (new,)
+        print("Watchpoint %d added" % (new,))
 
     def getlinecacheoutput(self, pygments_background):
         if not pygments_background or pygments_background == 'off':
@@ -486,7 +491,7 @@ class RevDebugControl(object):
             from pygments.lexers import PythonLexer
             from pygments.formatters import TerminalFormatter
         except ImportError as e:
-            print >> sys.stderr, 'ImportError: %s' % (e,)
+            print('ImportError: %s' % (e,), file=sys.stderr)
             return None
         #
         lexer = PythonLexer()

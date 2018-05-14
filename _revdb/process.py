@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, struct, socket, errno, subprocess
 import linecache
 from _revdb import ancillary
@@ -106,7 +107,7 @@ class ReplayProcess(object):
                 raise EOFError
             size -= len(data)
             pieces.append(data)
-        return ''.join(pieces)
+        return b''.join(pieces)
 
     def send(self, msg):
         #print 'SENT:', self.pid, msg
@@ -122,7 +123,7 @@ class ReplayProcess(object):
         #print 'RECV:', self.pid, msg
         return msg
 
-    def expect(self, cmd, arg1=0, arg2=0, arg3=0, extra=""):
+    def expect(self, cmd, arg1=0, arg2=0, arg3=0, extra=b""):
         msg = self.recv()
         assert msg.cmd == cmd, msg
         if arg1 is not Ellipsis:
@@ -224,13 +225,13 @@ class ReplayProcess(object):
         while True:
             msg = self.recv()
             if msg.cmd == ANSWER_TEXT:
-                sys.stdout.write(msg.extra)
+                sys.stdout.write(msg.extra.decode('utf-8')) XXX encoding
                 sys.stdout.flush()
             elif msg.cmd == ANSWER_READY:
                 self.update_times(msg)
                 break
             elif msg.cmd == ANSWER_LINECACHE:
-                line = self.linecacheoutput(msg.extra, msg.arg1)
+                line = self.linecacheoutput(msg.extra.decode('utf-8') XXX encoding, msg.arg1)
                 if line == '':
                     line = '?'
                 if msg.arg2:    # strip?
@@ -263,7 +264,7 @@ class ReplayProcess(object):
                 else:
                     del b.num2break[msg.arg1]
             else:
-                print >> sys.stderr, "unexpected %r" % (msg,)
+                print("unexpected %r" % (msg,), file=sys.stderr)
 
 
 class ReplayProcessGroup(object):
@@ -276,9 +277,16 @@ class ReplayProcessGroup(object):
     def __init__(self, executable, revdb_log_filename, linecacheoutput=None,
                  progress_callback=None):
         s1, s2 = socket.socketpair()
+        if hasattr(s2, 'set_inheritable'):
+            s1.set_inheritable(False)
+            s2.set_inheritable(True)
+            preexec_fn = None
+        else:
+            preexec_fn = s1.close
+
         initial_subproc = subprocess.Popen(
             [executable, '--revdb-replay', revdb_log_filename,
-             str(s2.fileno())], preexec_fn=s1.close)
+             str(s2.fileno())], preexec_fn=preexec_fn, close_fds=False)
         s2.close()
         child = ReplayProcess(initial_subproc.pid, s1,
                               linecacheoutput=linecacheoutput,
@@ -443,7 +451,7 @@ class ReplayProcessGroup(object):
             flat = [num2break.get(n, '\x00') for n in range(N)]
             arg1 = self.all_breakpoints.stack_id
             arg2 = self.all_breakpoints.thread_num
-            extra = ''.join(flat)
+            extra = b''.join(flat)
             self.active.send(Message(CMD_BREAKPOINTS, arg1, arg2, extra=extra))
             self.active.print_text_answer(pgroup=self)
         else:
@@ -459,7 +467,7 @@ class ReplayProcessGroup(object):
                 if name.startswith('W'):
                     text = watchvalues[n]
                 flat.append(text)
-            extra = '\x00'.join(flat)
+            extra = b'\x00'.join(flat)
             self.active.send(Message(CMD_WATCHVALUES, extra=extra))
             self.active.expect_ready()
 
@@ -469,8 +477,8 @@ class ReplayProcessGroup(object):
         try:
             self._update_watchpoints_uids()
         except socket.error as e:
-            print >> sys.stderr, "socket.error: %s" % (e,)
-            print >> sys.stderr, "restarting at position 1"
+            print("socket.error: %s" % (e,), file=sys.stderr)
+            print("restarting at position 1", file=sys.stderr)
             self.jump_in_time(1)
             self._update_watchpoints_uids()
         seen = set()
@@ -479,8 +487,8 @@ class ReplayProcessGroup(object):
                 _, text = self.check_watchpoint_expr(name[4:])
                 if text != self.all_breakpoints.watchvalues[num]:
                     #print self.active.pid
-                    print 'updating watchpoint value: %s => %s' % (
-                        self.all_breakpoints.sources[num], text)
+                    print('updating watchpoint value: %s => %s' % (
+                        self.all_breakpoints.sources[num], text))
                     self.all_breakpoints.watchvalues[num] = text
                 seen.add(num)
         assert set(self.all_breakpoints.watchvalues) == seen
@@ -523,7 +531,7 @@ class ReplayProcessGroup(object):
     def close(self):
         """Close all subprocesses.
         """
-        for subp in [self.active] + self.paused.values():
+        for subp in [self.active] + list(self.paused.values()):
             subp.close()
 
     def ensure_printed_objects(self, uids, forced_time=None):
@@ -561,7 +569,7 @@ class ReplayProcessGroup(object):
             if future_uids:
                 future_uids.sort()
                 pack_uids = [struct.pack('q', uid) for uid in future_uids]
-                pack_uids = ''.join(pack_uids)
+                pack_uids = b''.join(pack_uids)
                 #print '%d: from %d: CMD_FUTUREIDS %r' % (
                 #    self.active.pid,
                 #    self.active.current_time,
@@ -621,7 +629,7 @@ class ReplayProcessGroup(object):
         uids = self.ensure_nids_to_uids(nids)
         self.active.tainted = True
         self.attach_printed_objects(uids, watch_env=False)
-        self.active.send(Message(CMD_PRINT, extra=expression))
+        self.active.send(Message(CMD_PRINT, extra=expression)) XXX ENCODING
         try:
             self.active.print_text_answer(pgroup=self)
         except RecreateSubprocess:
