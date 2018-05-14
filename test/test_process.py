@@ -223,7 +223,14 @@ class TestReplayProcessGroup:
         group = ReplayProcessGroup(str(self.exename), self.rdbname)
         with stdout_capture() as buf:
             group.print_cmd('2.35')
-        assert buf.getvalue() == "0.35\n2.0\n0.5875\n2\n"
+        #assert buf.getvalue() == "0.35\n2.0\n0.5875\n2\n" -- ideally,
+        # but so far we just use the C's sprintf()
+        lines = buf.getvalue().splitlines()
+        assert len(lines) == 4
+        assert (float(lines[0]) - 0.35) < 1e-12
+        assert lines[1] == "2.0"
+        assert (float(lines[0]) - 0.5875) < 1e-12
+        assert lines[3] == "2"
 
     def test_ctrl_c(self):
         localdir = os.path.dirname(__file__)

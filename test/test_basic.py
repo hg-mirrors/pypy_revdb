@@ -293,7 +293,7 @@ class TestSimpleInterpreter(InteractiveTests):
             return 9
         compile(cls, main, backendopt=False)
         assert run(cls, 'abc d ef') == ('abc\nd\nef\n'
-                                        '3\n0\n0\n12\n15\n17\n')
+                                        '3\n0\n0\n13\n17\n20\n')
         rdb = fetch_rdb(cls, [cls.exename, 'abc', 'd', 'ef'])
         assert rdb.number_of_stop_points() == 3
 
