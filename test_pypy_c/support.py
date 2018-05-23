@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os
 import time
 import subprocess
@@ -53,3 +54,28 @@ def spawn(curdir, argv, expect_crash=False):
         return pexpect.spawn(cmdline, timeout=3)
     finally:
         os.chdir(old_cwd)
+
+
+class Rdb:
+    def __init__(self, curdir, argv, expect_crash=False):
+        self.child = spawn(curdir, argv, expect_crash=expect_crash)
+        self.child.expect(r'RevDB: ')
+        self.child.expect(r'File ')
+        self.child.expect(r'\(1\)\$ ')
+        self.points = {1: 1}
+
+    def command(self, command, go_to_point):
+        self.child.sendline(command)
+        self.child.expect(r'\((\d+)\)\$ ')
+        self.before = self.child.before.replace('\r\n', '\n')
+        new_real_pt = int(self.child.match.group(1))
+        print(repr(command), '->', new_real_pt)
+        if go_to_point in self.points:
+            assert new_real_pt == self.points[go_to_point]
+        else:
+            for pt, real_pt in self.points.items():
+                if pt < go_to_point:
+                    assert real_pt < new_real_pt
+                else:
+                    assert real_pt > new_real_pt
+            self.points[go_to_point] = new_real_pt

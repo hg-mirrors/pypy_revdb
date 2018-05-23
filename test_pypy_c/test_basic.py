@@ -47,3 +47,18 @@ def test_start_debugger(tmpdir):
     # print the value of 'x'
     child.sendline('p x')
     child.expect(r'60')
+
+
+def test_start_debugger_2(tmpdir):
+    tmpdir.join('test1.py').write('x = 5 * 10\nx = 6 * 10\nx = 7 * 10\n')
+    rdb = support.Rdb(tmpdir, ['test1.py'])
+    rdb.command('c', 20)
+    pt = 20
+    while True:
+        pt -= 1
+        assert pt > 14
+        rdb.command('bstep', pt)
+        if 'x = 7 * 10\n' in rdb.before:
+            break
+    rdb.command('p x', pt)
+    assert '60\n' in rdb.before
