@@ -20,6 +20,9 @@ def find_executable():
     for version, search in [(2, os.path.join(lnk, 'pypy', 'goal', 'pypy-c')),
                             (3, os.path.join(lnk, 'pypy', 'goal', 'pypy3-c'))]:
         if os.path.isfile(search):
+            print('using', search)
+            if os.path.islink(lnk):
+                print('  which is really in', os.readlink(lnk))
             return version, search
     raise AssertionError("not found: ../reverse-debugger/pypy/goal/pypy*-c")
 
