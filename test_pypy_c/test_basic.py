@@ -39,7 +39,7 @@ def test_start_debugger(tmpdir):
         if child.match.group() == 'x = 7 * 10':
             break
     else:
-        raise AssertionError("not reaching the line 'x = 7'")
+        raise AssertionError("not reaching the line 'x = 7 * 10'")
     child.expect(r'\((\d+)\)\$ ')
     p_x70 = int(child.match.group(1))
     assert 1 < p_x70 < p_end
