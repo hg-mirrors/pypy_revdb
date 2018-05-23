@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys, os
-import time
+import time, re
 import subprocess
 import pexpect
 
@@ -62,20 +62,27 @@ class Rdb:
         self.child.expect(r'RevDB: ')
         self.child.expect(r'File ')
         self.child.expect(r'\(1\)\$ ')
-        self.points = {1: 1}
 
-    def command(self, command, go_to_point):
+    def command(self, command, target_pt=None):
         self.child.sendline(command)
         self.child.expect(r'\((\d+)\)\$ ')
         self.before = self.child.before.replace('\r\n', '\n')
-        new_real_pt = int(self.child.match.group(1))
-        print(repr(command), '->', new_real_pt)
-        if go_to_point in self.points:
-            assert new_real_pt == self.points[go_to_point]
-        else:
-            for pt, real_pt in self.points.items():
-                if pt < go_to_point:
-                    assert real_pt < new_real_pt
-                else:
-                    assert real_pt > new_real_pt
-            self.points[go_to_point] = new_real_pt
+        pt = int(self.child.match.group(1))
+        print(repr(command), '->', pt)
+        assert target_pt is None or pt == target_pt
+        return pt
+
+    def setup(self, recognize, max_back=500):
+        pt = self.command('c')
+        for retry in range(max_back):
+            bstep_pt = self.command('bstep', None)
+            assert 1 < bstep_pt < pt
+            pt = bstep_pt
+            if recognize in self.before:
+                return pt
+        raise AssertionError("did not find %r in %s steps" %
+                             (recognize, max_back))
+
+    def grab_object(self):
+        r = re.compile(r'^(\$\d+) = ', re.MULTILINE)
+        return r.search(self.before).group(1)
