@@ -8,7 +8,9 @@ import pytest
         r"100000000000000000000" + ("L" if support.version == 2 else "")),
     ("[5, 6, 7]", r"\[5, 6, 7\]"),
     ("{1: 2, 3: 4, 5: 6}", r"\{1: 2, 3: 4, 5: 6\}"),
-    ("A()", "<__main__.A instance at 0x[0-9a-f]+>"),
+    ("A()", "<__main__.A %s at 0x[0-9a-f]+>" %
+            ("instance" if support.version == 2 else "object",)),
+    ("2.5", "2.5"),
 ])
 def test_repr_objects(obj_input, obj_output, tmpdir):
     tmpdir.join('test1.py').write(
