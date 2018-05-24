@@ -225,6 +225,8 @@ class ReplayProcess(object):
             msg = self.recv()
             if msg.cmd == ANSWER_TEXT:
                 sys.stdout.write(msg.extra)
+                if msg.arg1:    # add newline?
+                    sys.stdout.write("\n")
                 sys.stdout.flush()
             elif msg.cmd == ANSWER_READY:
                 self.update_times(msg)
