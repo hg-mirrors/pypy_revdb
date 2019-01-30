@@ -41,13 +41,9 @@ are not prebuilt binaries at this point in time.  This is mainly because
 distributing Linux binaries is a mess.  Note that the building process
 takes 20 to 30 minutes (which is long, but less than a normal PyPy).
 
-* If you don't have a PyPy repository already downloaded, you can
-  download directly the correct revision from
-  https://bitbucket.org/pypy/pypy/downloads?tab=tags --- you need the
-  latest ``RevDB-pypy2.7-vXXX`` tag, corresponding to the latest release
-  of revdb.  Alternatively, if you already have a PyPy repository, make
-  a local clone of it and do ``hg update RevDB-pypy2.7-vXXX``; or go to
-  the development head with ``hg update reverse-debugger``.
+* Get PyPy's source code: see
+  http://pypy.org/download.html#building-from-source (point 1).  Starting
+  from PyPy v7.0.0 you don't need to use a special reverse-debugger branch.
 
 * Make sure you have the dependencies installed:
   http://pypy.readthedocs.org/en/latest/build.html#install-build-time-dependencies
