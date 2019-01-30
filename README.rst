@@ -23,7 +23,8 @@ http://programmers.stackexchange.com/questions/181527/why-is-reverse-debugging-r
 .. _`rr`: http://rr-project.org/
 
 RevDB is tested on Linux and to some extent on OS/X.  It is known *not*
-to work on Windows so far.  Only Python 2.7 is implemented for now.
+to work on Windows so far.  It should support both Python 2.7 and 3.x
+as available in PyPy.
 
 This is the original blog post, which describes the basics:
 https://morepypy.blogspot.ch/2016/07/reverse-debugging-for-python.html
@@ -66,7 +67,9 @@ takes 20 to 30 minutes (which is long, but less than a normal PyPy).
   file originally lives).  It has got a small CFFI module, so you should
   run either ``python setup.py install`` (usually in a virtualenv) or
   directly ``python setup.py build_ext --inplace``.  Use a regular
-  CPython 2.7.x here, or PyPy but not the RevDB version of PyPy.
+  CPython 2.7.x here, or PyPy2 but not the RevDB version of PyPy.
+  (You need to use Python 2.x for this even if you did a recording of
+  a Python 3.x program above.)
 
 
 Usage
@@ -104,7 +107,7 @@ Usage
   need to install ``pygments``, then).
 
   Do not run this in the virtualenv you created in the previous step!
-  This must run with a regular Python (CPython 2.7.x, or non-RevDB PyPy).
+  This must run with a regular Python (CPython 2.7.x, or non-RevDB PyPy2).
 
   Replaying works by having ``revdb.py`` find the ``pypy-c`` of RevDB
   and internally executing it in a special mode.  It looks at the path
