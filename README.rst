@@ -55,12 +55,11 @@ takes 20 to 30 minutes (which is long, but less than a normal PyPy).
     cd pypy/goal
     ../../rpython/bin/rpython -O2 --revdb
 
-  *Known issue:* on Linux kernel 4.12 (or at least 4.12.4-ARCH), address
-  space layout randomization (ASLR) apparently cannot be disabled any
-  more.  This is a blocker for RevDB.  It works if you build your revdb
-  version with the ``--no-shared`` option, but this means you cannot use
-  cpyext (the C extension module compatibility layer).  Another option
-  is to downgrade the kernel...
+  *Known issue:* on Linux kernel 4.12, address space layout randomization
+  (ASLR) cannot be disabled any more.  This is a blocker for RevDB.  (It works
+  if you build your revdb version with the ``--no-shared`` option, but this
+  means you cannot use cpyext, the C extension module compatibility layer.)
+  Kernel 4.19 works again.  The situation for intermediate kernels is unknown.
 
 * Finally, you need to install the regular, almost-pure Python package
   https://bitbucket.org/pypy/revdb (which is where the present README
