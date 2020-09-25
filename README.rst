@@ -6,16 +6,16 @@ RevDB, the Reverse Debugger
 Introduction
 ============
 
-A "reverse debugger" is a debugger where you can go forward and backward
-in time.  RevDB is a reverse debugger for Python based on PyPy.  It can
+RevDB is a "reverse debugger" for Python where you can go forward and
+backward in time.  RevDB is based on PyPy and it can
 be used to track down hard-to-reproduce bugs in your Python programs
-(whether you usually run them on PyPy or on CPython).
+(that you run on PyPy or on CPython).
 
-It is similar to `undodb-gdb`_ and `rr`_, which are reverse debuggers
-for C code.  RevDB does not allow you to step in or inspect things at
+Similar reverse debuggers for C are `undodb-gdb`_ and `rr`_.
+RevDB does not step in or inspect things at
 the level of C: it works purely on Python.
 
-For more information about what reverse debugging is, have a look at
+For more information about reverse debugging, have a look at
 https://en.wikipedia.org/wiki/Debugger#Reverse_debugging and
 http://programmers.stackexchange.com/questions/181527/why-is-reverse-debugging-rarely-used.
 
@@ -37,21 +37,23 @@ have been fixed; ``next``-style commands behave more reasonably now;
 Installation
 ============
 
-You need to download and build a special version of PyPy.  Sorry, there
-are not prebuilt binaries at this point in time.  This is mainly because
-distributing Linux binaries is a mess.  Note that the building process
-takes 20 to 30 minutes (which is long, but less than a normal PyPy).
+Sorry, there are not prebuilt binaries at this point in time.  Mainly
+because distributing Linux binaries is a mess.  So you need to build it
+from source manually. The building process takes 20 to 30 minutes
+(which is still less than a normal PyPy).
+
+RevRB is a special version of PyPy.  To build it:
 
 * Get PyPy's source code: see
   http://pypy.org/download.html#building-from-source (point 1).  Starting
   from PyPy v7.0.0 you don't need to use a special reverse-debugger branch.
 
-* Make sure you have the dependencies installed:
+* Make sure you have PyPy dependencies installed:
   http://pypy.readthedocs.org/en/latest/build.html#install-build-time-dependencies
   (note that for RevDB you need the Boehm garbage collector ``libgc``,
   even if you don't plan to run PyPy's tests).
 
-* Build the revdb version of PyPy::
+* Build RevDB::
 
     cd pypy/goal
     ../../rpython/bin/rpython -O2 --revdb
