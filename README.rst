@@ -65,7 +65,7 @@ RevRB is a special version of PyPy.  To build it:
   Kernel 4.19 works again.  The situation for intermediate kernels is unknown.
 
 * Finally, you need to install the regular, almost-pure Python package
-  https://bitbucket.org/pypy/revdb (which is where the present README
+  https://foss.heptapod.net/pypy/revdb (which is where the present README
   file originally lives).  It has got a small CFFI module, so you should
   run either ``python setup.py install`` (usually in a virtualenv) or
   directly ``python setup.py build_ext --inplace``.  Use a regular
@@ -285,7 +285,7 @@ Mailing list: pypy-dev@python.org
 
 You can report issues in the `issue tracker`__ of RevDB.
 
-.. __: https://bitbucket.org/pypy/revdb/issues?status=new&status=open
+.. __: https://foss.heptapod.net/pypy/revdb/-/issues
 
 RevDB is made by Armin Rigo, but thanks go to the rest of the PyPy team
 as well.
